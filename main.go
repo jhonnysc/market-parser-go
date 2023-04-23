@@ -108,36 +108,9 @@ func processPacket(raw []byte) {
 
 }
 
-// Decompresses a byte array of Oodle Compressed Data (Requires Oodle DLL)
 func main() {
 	flag.Parse()
 
 	oodle.Init()
 	sniffer(processPacket)
 }
-
-// func old() {
-
-// rawData, err := ioutil.ReadFile("D:/projects/market-parser/raw.bin")
-
-// if err != nil {
-// 	panic(err)
-// }
-// 	handle, err := pcap.OpenLive("\\Device\\NPF_{BF46F36F-F80E-4E9D-8D8A-18A8C353858E}", 65536, false, 3)
-
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	filter := "tcp src port 6040"
-// 	err = handle.SetBPFFilter(filter)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
-
-// 	// for packet := range packetSource.Packets() {
-// 	// 	// processPacket(packet)
-// 	// }
-// }
