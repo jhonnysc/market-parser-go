@@ -64,7 +64,7 @@ func OodleNetwork1_Shared_Size(bits int) int {
 }
 
 func Init() {
-	oodleState := "oodle_state.bin"
+	oodleState := "assets/oodle_state.bin"
 	f, err := ioutil.ReadFile(oodleState)
 	if err != nil {
 		panic(err)

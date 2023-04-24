@@ -1,8 +1,10 @@
 package market
 
 import (
+	"context"
 	"encoding/binary"
 	"fmt"
+	pb "market/rpc"
 )
 
 var (
@@ -204,8 +206,6 @@ type Necklace struct {
 type EarringRing struct {
 	stat1      uint32
 	stat1Value uint32
-	stat2      uint32
-	stat2Value uint32
 	eng1       uint32
 	eng1Value  uint32
 	eng2       uint32
@@ -333,35 +333,62 @@ func formatResult(ring *EarringRing, necklace *Necklace) string {
 	return result
 }
 
-func ParseData(data []byte) {
+func sendMessageToRpc(client pb.MessageServiceClient, ring *EarringRing, necklace *Necklace, header Header) {
+	if ring != nil && client != nil {
+		client.SendAccessory(context.Background(), &pb.Accessory{
+			Stat1:      int32(ring.stat1),
+			Stat1Value: int32(ring.stat1Value),
+			Eng1:       int32(ring.eng1),
+			Eng1Value:  int32(ring.eng1Value),
+			Eng2:       int32(ring.eng2),
+			Eng2Value:  int32(ring.eng2Value),
+			Neg:        int32(ring.neg),
+			NegValue:   int32(ring.negValue),
+			Bid:        int32(header.bid),
+			Buyout:     int32(header.buyout),
+		})
+	}
+
+	if necklace != nil && client != nil {
+		client.SendAccessory(context.Background(), &pb.Accessory{
+			Stat1:      int32(necklace.stat1),
+			Stat1Value: int32(necklace.stat1Value),
+			Stat2:      int32(necklace.stat2),
+			Stat2Value: int32(necklace.stat2Value),
+			Eng1:       int32(necklace.eng1),
+			Eng1Value:  int32(necklace.eng1Value),
+			Eng2:       int32(necklace.eng2),
+			Eng2Value:  int32(necklace.eng2Value),
+			Neg:        int32(necklace.neg),
+			NegValue:   int32(necklace.negValue),
+			Bid:        int32(header.bid),
+			Buyout:     int32(header.buyout),
+		})
+	}
+}
+
+func ParseData(data []byte, rpcClient pb.MessageServiceClient) {
 	search := data[16:]
 	maxResultsPerPage := 10
-
 	currentOffset := 0
 
 	for i := 0; i < maxResultsPerPage; i++ {
-
 		if len(search[currentOffset:]) < item_header_size {
 			break
 		}
-
 		item_header := getHeader(search[currentOffset:])
-
-		println("-------------------------------------------------")
-
-		fmt.Printf("Item Type: %s | Buyout: %d | Bid: %d \n", item_header.item_type, item_header.buyout, item_header.bid)
+		// println("-------------------------------------------------")
+		// fmt.Printf("Item Type: %s | Buyout: %d | Bid: %d \n", item_header.item_type, item_header.buyout, item_header.bid)
 
 		if item_header.item_type == "Ring" || item_header.item_type == "Earring" {
 			itemStatus := GetEarringRing(search[currentOffset:])
-
-			println(formatResult(&itemStatus, nil))
-
+			// println(formatResult(&itemStatus, nil))
 			currentOffset += item_header_size + earring_ring_footer_size
+			sendMessageToRpc(rpcClient, &itemStatus, nil, item_header)
 		} else {
 			itemStatus := GetNecklace(search[currentOffset:])
-
-			println(formatResult(nil, &itemStatus))
-
+			// println(formatResult(nil, &itemStatus))
+			sendMessageToRpc(rpcClient, nil, &itemStatus, item_header)
 			currentOffset += item_header_size + necklace_footer_size
 		}
 

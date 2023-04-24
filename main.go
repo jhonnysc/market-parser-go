@@ -8,12 +8,17 @@ import (
 	oodle "market/oodle"
 	parser "market/packet/market_search"
 
+	pb "market/rpc"
+
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 var (
-	xor_key, _ = ioutil.ReadFile("../meter-data/xor.bin")
+	xor_key, _ = ioutil.ReadFile("assets/xor.bin")
+	rpcClient  pb.MessageServiceClient
 )
 
 var devicecNameFlag = flag.String("device", "none", "device name")
@@ -104,13 +109,43 @@ func processPacket(raw []byte) {
 		panic(err)
 	}
 
-	parser.ParseData(decompressed)
+	parser.ParseData(decompressed, rpcClient)
 
 }
 
+func getRpc() (pb.MessageServiceClient, *grpc.ClientConn) {
+	conn, err := grpc.Dial("0.0.0.0:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+	if err != nil {
+		println("RPC Server offline, ignoring...")
+		return nil, nil
+	}
+
+	println("RPC client connected")
+
+	client := pb.NewMessageServiceClient(conn)
+
+	// response, err := client.SayHello(context.Background(), &pb.HelloRequest{Name: "From Golang"})
+
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// println(response.Message)
+
+	return client, conn
+}
+
 func main() {
+
 	flag.Parse()
 
 	oodle.Init()
+
+	var conn *grpc.ClientConn
+
+	rpcClient, conn = getRpc()
+
+	defer conn.Close()
+
 	sniffer(processPacket)
 }

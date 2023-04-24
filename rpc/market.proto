@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package MessageService;
+
+option go_package = "rpc/market";
+
+import "google/protobuf/wrappers.proto";
+
+service MessageService {
+    rpc SendAccessory (Accessory) returns (google.protobuf.BoolValue) {}
+}
+
+//  protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative rpc/market.proto
+
+message Accessory {
+    int32 stat1 = 1;
+    int32 stat1Value = 2;
+    int32 stat2 = 3;
+    int32 stat2Value = 4;
+    int32 eng1 = 5;
+    int32 eng1Value = 6;
+    int32 eng2 = 7;
+    int32 eng2Value = 8;
+    int32 neg = 9;
+    int32 negValue = 10;
+    int32 bid = 11;
+    int32 buyout = 12;
+}
+
