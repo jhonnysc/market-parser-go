@@ -1,4 +1,4 @@
-const PROTO_PATH = "D:\\projects\\market-parser-go\\rpc\\market.proto";
+const PROTO_PATH = "..\\rpc\\market.proto";
 const grpc = require('@grpc/grpc-js');
 const protoLoader = require('@grpc/proto-loader');
 
